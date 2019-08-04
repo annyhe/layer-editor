@@ -25,9 +25,9 @@ class EditableText extends React.Component {
     <Text
     draggable
         id={this.props.id}
-        text={this.props.textValue}
-        x={this.props.textX}
-        y={this.props.textY}
+        text={this.props.text}
+        x={this.props.x}
+        y={this.props.y}
         fontSize={20}
         onDblClick={this.handleTextDblClick}
       />
@@ -41,9 +41,9 @@ class App extends Component {
     textNodes: [],
     textEditVisible: false,
     // for temporary edits
-    textX: 0,
-    textY: 0,
-    textValue: 'hello world',
+    x: 0,
+    y: 0,
+    text: 'hello world',
     currentTextNodeID: 0,
   };
   updateTextState = e => {
@@ -53,21 +53,21 @@ class App extends Component {
 
     const copyOfNodes = [...this.state.textNodes];
     const node = copyOfNodes.filter((node) => node.id === nodeID);
-    node.textX = absPos.x;
-    node.textY = absPos.y;
+    node.x = absPos.x;
+    node.y = absPos.y;
     
     this.setState({
-      textValue: e.target.text(),
+      text: e.target.text(),
       textEditVisible: true,
       textNodes: copyOfNodes,
-      textX: absPos.x,
-      textY: absPos.y,
+      x: absPos.x,
+      y: absPos.y,
       currentTextNodeID: nodeID
     });
   }
   handleTextAreaEdit = e => {
     this.setState({
-      textValue: e.target.value
+      text: e.target.value
     });
   };
   handleTextareaKeyDown = e => {
@@ -78,7 +78,7 @@ class App extends Component {
       return;
     }
 
-    nodes[0].textValue = e.target.value;
+    nodes[0].text = e.target.value;
 
     if (e.keyCode === 13) {
       this.setState({
@@ -139,9 +139,9 @@ class App extends Component {
     this.setState({
       textNodes: [...this.state.textNodes, { 
         id: getRandomInt(), 
-        textX: 0,
-        textY: 0,
-        textValue: "Hello"
+        x: 0,
+        y: 0,
+        text: "Hello"
       }]
     });
   };
@@ -173,6 +173,7 @@ class App extends Component {
               strokeWidth={4}
             />
             {this.state.textNodes.map(text => {
+              console.log('from render', text);
               return <EditableText 
                 key={text.id || getRandomInt()} 
                 onDragStart={this.handleDragStart} 
@@ -187,12 +188,12 @@ class App extends Component {
           </Layer>
         </Stage>
         <textarea
-          value={this.state.textValue}
+          value={this.state.text}
           style={{
             display: this.state.textEditVisible ? "block" : "none",
             position: "absolute",
-            top: this.state.textY + "px",
-            left: this.state.textX + "px"
+            top: this.state.y + "px",
+            left: this.state.x + "px"
           }}
           onChange={this.handleTextAreaEdit}
           onKeyDown={this.handleTextareaKeyDown}
