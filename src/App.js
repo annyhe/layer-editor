@@ -40,15 +40,15 @@ class App extends Component {
     images: [],
     textNodes: [],
     textEditVisible: false,
-    // for temporary edits
+    // for temporary text edits
     x: 0,
     y: 0,
     text: 'hello world',
     currentTextNodeID: 0,
   };
   updateTextState = e => {
+    // e.target refers to Text instead of textarea
     const absPos = e.target.getAbsolutePosition();
-    console.log(this.state.textNodes)
     const nodeID = e.target.id();
 
     const copyOfNodes = [...this.state.textNodes];
@@ -63,7 +63,7 @@ class App extends Component {
       x: absPos.x,
       y: absPos.y,
       currentTextNodeID: nodeID
-    });
+    }, () => {console.log('from callback')}); 
   }
   handleTextAreaEdit = e => {
     this.setState({
@@ -94,7 +94,6 @@ class App extends Component {
     });
   };
   handleDragEnd = e => {
-    console.log(e.target.getAbsolutePosition(this.layerNode));
     e.target.to({
       duration: 0.5,
       easing: Konva.Easings.ElasticEaseOut,
@@ -105,14 +104,12 @@ class App extends Component {
 
   loadFromJson = () => {
     const obj = JSON.parse(localStorage.getItem("konva"));
-    console.log(obj.images);
     this.setState({
       images: obj.images
     });
     const textNodes = [];
     obj.children[0].children.forEach(child => {
       if (child.className === "Text") {
-        console.log(child.attrs);
         textNodes.push({...child.attrs});
       }
     });
@@ -129,13 +126,11 @@ class App extends Component {
     const jsonObject = JSON.parse(jsonString);
     jsonObject.images = [];
     imageNodes.forEach(element => {
-      console.log(element.image().src);
       jsonObject.images.push({ id: element.id(), url: element.image().src });
     });
     localStorage.setItem("konva", JSON.stringify(jsonObject));
   };
   addText = () => {
-    console.log(this.state.textNodes);
     this.setState({
       textNodes: [...this.state.textNodes, { 
         id: getRandomInt(), 
@@ -173,14 +168,12 @@ class App extends Component {
               strokeWidth={4}
             />
             {this.state.textNodes.map(text => {
-              console.log('from render', text);
               return <EditableText 
                 key={text.id || getRandomInt()} 
                 onDragStart={this.handleDragStart} 
                 onDragEnd={this.handleDragEnd} 
                 {...text} 
                 updateTextState={this.updateTextState} />
-              // return <Text key={text.id || getRandomInt()} {...text} />;
             })}
             {this.state.images.map(image => {
               return <SimpleApp key={image.id} id={image.id} url={image.url} />;
@@ -188,6 +181,7 @@ class App extends Component {
           </Layer>
         </Stage>
         <textarea
+          ref={textarea => textarea && textarea.focus()}
           value={this.state.text}
           style={{
             display: this.state.textEditVisible ? "block" : "none",
