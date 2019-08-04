@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Konva from "konva";
-import { Stage, Layer, Rect, Text, Image } from "react-konva";
+import { Stage, Layer, Rect, Image, Line } from "react-konva";
+import EditableText from "./EditableText";
+import MovableLine from "./MovableLine";
 import useImage from "use-image";
 
 const url = "https://konvajs.github.io/assets/yoda.jpg";
@@ -15,26 +17,6 @@ function SimpleApp(props) {
   return <Image id={props.id || _id} draggable image={image} />;
 }
 
-class EditableText extends React.Component {
-  handleTextDblClick = e => {
-    this.props.updateTextState(e);
-  };
-
-  render() {
-    return (
-    <Text
-    draggable
-        id={this.props.id}
-        text={this.props.text}
-        x={this.props.x}
-        y={this.props.y}
-        fontSize={20}
-        onDblClick={this.handleTextDblClick}
-      />
-    );
-  }
-}
-
 class App extends Component {
   state = {
     images: [],
@@ -43,8 +25,19 @@ class App extends Component {
     // for temporary text edits
     x: 0,
     y: 0,
-    text: 'hello world',
+    text: "hello world",
     currentTextNodeID: 0,
+    // for line
+    lines: [
+      {
+        x: 100,
+        y: 100,
+        x0: 0,
+        y0: 0,
+        x1: 100,
+        y1: 100
+      }
+    ]
   };
   updateTextState = e => {
     // e.target refers to Text instead of textarea
@@ -52,19 +45,24 @@ class App extends Component {
     const nodeID = e.target.id();
 
     const copyOfNodes = [...this.state.textNodes];
-    const node = copyOfNodes.filter((node) => node.id === nodeID);
+    const node = copyOfNodes.filter(node => node.id === nodeID);
     node.x = absPos.x;
     node.y = absPos.y;
-    
-    this.setState({
-      text: e.target.text(),
-      textEditVisible: true,
-      textNodes: copyOfNodes,
-      x: absPos.x,
-      y: absPos.y,
-      currentTextNodeID: nodeID
-    }, () => {console.log('from callback')}); 
-  }
+
+    this.setState(
+      {
+        text: e.target.text(),
+        textEditVisible: true,
+        textNodes: copyOfNodes,
+        x: absPos.x,
+        y: absPos.y,
+        currentTextNodeID: nodeID
+      },
+      () => {
+        console.log("from callback");
+      }
+    );
+  };
   handleTextAreaEdit = e => {
     this.setState({
       text: e.target.value
@@ -72,9 +70,11 @@ class App extends Component {
   };
   handleTextareaKeyDown = e => {
     const copyOfNodes = [...this.state.textNodes];
-    const nodes = copyOfNodes.filter((node) => node.id === this.state.currentTextNodeID);
+    const nodes = copyOfNodes.filter(
+      node => node.id === this.state.currentTextNodeID
+    );
     if (!nodes.length) {
-      console.log('Text node ID not found in state');
+      console.log("Text node ID not found in state");
       return;
     }
 
@@ -86,7 +86,7 @@ class App extends Component {
         textNodes: copyOfNodes
       });
     }
-  };  
+  };
   handleDragStart = e => {
     e.target.setAttrs({
       scaleX: 1.1,
@@ -110,13 +110,13 @@ class App extends Component {
     const textNodes = [];
     obj.children[0].children.forEach(child => {
       if (child.className === "Text") {
-        textNodes.push({...child.attrs});
+        textNodes.push({ ...child.attrs });
       }
     });
 
     this.setState({
       textNodes
-    });    
+    });
   };
 
   saveToJson = () => {
@@ -132,31 +132,44 @@ class App extends Component {
   };
   addText = () => {
     this.setState({
-      textNodes: [...this.state.textNodes, { 
-        id: getRandomInt(), 
-        x: 0,
-        y: 0,
-        text: "Hello"
-      }]
+      textNodes: [
+        ...this.state.textNodes,
+        {
+          id: getRandomInt(),
+          x: 0,
+          y: 0,
+          text: "Hello"
+        }
+      ]
     });
   };
   saveImage = () => {
     const base64String = this.stageNode.toDataURL();
-    console.log(base64String);
-    this.downloadLink.download = 'stage.png';
+    this.downloadLink.download = "stage.png";
     this.downloadLink.href = base64String;
     this.downloadLink.click();
-  }
+  };
+  handleLineDragEnd = e => {
+    this.setState({
+      x: e.target.x(),
+      y: e.target.y()
+    });
+  };
   render() {
     return (
       <div>
-        <a 
-        style={{
-          display:  "none"
-        }}
-        ref={node => {
+        <a
+          style={{
+            display: "none"
+          }}
+          ref={node => {
             this.downloadLink = node;
-          }} href='#'> Download link</a>
+          }}
+          href="#"
+        >
+          {" "}
+          Download link
+        </a>
         <button onClick={this.saveImage}>Save image</button>
         <button onClick={this.addText}>Add text</button>
         <button onClick={this.saveToJson}>Save to json</button>
@@ -182,13 +195,20 @@ class App extends Component {
               stroke="black"
               strokeWidth={4}
             />
+            <MovableLine
+              handleLineDragEnd={this.handleLineDragEnd}
+              {...this.state.lines[0]}
+              />
             {this.state.textNodes.map(text => {
-              return <EditableText 
-                key={text.id || getRandomInt()} 
-                onDragStart={this.handleDragStart} 
-                onDragEnd={this.handleDragEnd} 
-                {...text} 
-                updateTextState={this.updateTextState} />
+              return (
+                <EditableText
+                  key={text.id || getRandomInt()}
+                  onDragStart={this.handleDragStart}
+                  onDragEnd={this.handleDragEnd}
+                  {...text}
+                  updateTextState={this.updateTextState}
+                />
+              );
             })}
             {this.state.images.map(image => {
               return <SimpleApp key={image.id} id={image.id} url={image.url} />;
@@ -206,7 +226,7 @@ class App extends Component {
           }}
           onChange={this.handleTextAreaEdit}
           onKeyDown={this.handleTextareaKeyDown}
-        />        
+        />
       </div>
     );
   }
