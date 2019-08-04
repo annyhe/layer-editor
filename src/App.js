@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Konva from "konva";
-import { Stage, Layer, Rect, Text, Label, Tag, Image } from "react-konva";
+import { Stage, Layer, Rect, Text, Image } from "react-konva";
 import useImage from "use-image";
 
 const url = "https://konvajs.github.io/assets/yoda.jpg";
@@ -15,22 +15,44 @@ function SimpleApp(props) {
   return <Image id={props.id || _id} draggable image={image} />;
 }
 
-// textarea need be outside of Stage
 class EditableText extends React.Component {
+  handleTextDblClick = e => {
+    this.props.updateTextState(e);
+  };
+
+  render() {
+    return (
+    <Text
+    draggable
+        id={this.props.id}
+        text={this.props.textValue}
+        x={this.props.textX}
+        y={this.props.textY}
+        fontSize={20}
+        onDblClick={this.handleTextDblClick}
+      />
+    );
+  }
+}
+
+class App extends Component {
   state = {
+    images: [],
+    textNodes: [],
     textEditVisible: false,
+    // these should be 1:1 with the text node
     textX: 0,
     textY: 0,
-    textValue: "Hello"
+    textValue: "Hello"    
   };
-  handleTextDblClick = e => {
+  updateTextState = e => {
     const absPos = e.target.getAbsolutePosition();
     this.setState({
       textEditVisible: true,
       textX: absPos.x,
       textY: absPos.y
     });
-  };
+  }
   handleTextEdit = e => {
     this.setState({
       textValue: e.target.value
@@ -42,38 +64,7 @@ class EditableText extends React.Component {
         textEditVisible: false
       });
     }
-  };
-  render() {
-    return (
-      <div>
-        <Text
-          text={this.state.textValue}
-          x={100}
-          y={100}
-          fontSize={20}
-          onDblClick={this.handleTextDblClick}
-        />
-        <textarea
-          value={this.state.textValue}
-          style={{
-            display: this.state.textEditVisible ? "block" : "none",
-            position: "absolute",
-            top: this.state.textY + "px",
-            left: this.state.textX + "px"
-          }}
-          onChange={this.handleTextEdit}
-          onKeyDown={this.handleTextareaKeyDown}
-        />
-      </div>
-    );
-  }
-}
-
-class App extends Component {
-  state = {
-    images: [],
-    textNodes: []
-  };
+  };  
   handleDragStart = e => {
     e.target.setAttrs({
       scaleX: 1.1,
@@ -122,6 +113,7 @@ class App extends Component {
     localStorage.setItem("konva", JSON.stringify(jsonObject));
   };
   addText = () => {
+    console.log(this.state.textNodes);
     this.setState({
       textNodes: [...this.state.textNodes, { id: getRandomInt() }]
     });
@@ -154,13 +146,30 @@ class App extends Component {
               strokeWidth={4}
             />
             {this.state.textNodes.map(text => {
-              return <Text key={text.id || getRandomInt()} {...text} />;
+              return <EditableText 
+                key={text.id || getRandomInt()} 
+                onDragStart={this.handleDragStart} 
+                onDragEnd={this.handleDragEnd} 
+                {...this.state} {...text} 
+                updateTextState={this.updateTextState} />
+              // return <Text key={text.id || getRandomInt()} {...text} />;
             })}
             {this.state.images.map(image => {
               return <SimpleApp key={image.id} id={image.id} url={image.url} />;
             })}
           </Layer>
         </Stage>
+        <textarea
+          value={this.state.textValue}
+          style={{
+            display: this.state.textEditVisible ? "block" : "none",
+            position: "absolute",
+            top: this.state.textY + "px",
+            left: this.state.textX + "px"
+          }}
+          onChange={this.handleTextEdit}
+          onKeyDown={this.handleTextareaKeyDown}
+        />        
       </div>
     );
   }
