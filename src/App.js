@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Konva from "konva";
-import { Stage, Layer, Rect, Image, Line } from "react-konva";
+import { Stage, Layer, Rect, Image } from "react-konva";
 import EditableText from "./EditableText";
 import MovableLine from "./MovableLine";
 import useImage from "use-image";
@@ -136,8 +136,8 @@ class App extends Component {
         ...this.state.textNodes,
         {
           id: getRandomInt(),
-          x: 0,
-          y: 0,
+          x: 20,
+          y: 20,
           text: "Hello"
         }
       ]
@@ -155,6 +155,13 @@ class App extends Component {
       y: e.target.y()
     });
   };
+  addImage = () => {
+    const copyOfImages = [...this.state.images];
+    copyOfImages.push({id: getRandomInt(), url: process.env.PUBLIC_URL + '/favicon.ico'});
+    this.setState({
+      images: copyOfImages
+    })
+  }
   render() {
     return (
       <div>
@@ -171,6 +178,7 @@ class App extends Component {
           Download link
         </a>
         <button onClick={this.saveImage}>Save image</button>
+        <button onClick={this.addImage}>Add image</button>
         <button onClick={this.addText}>Add text</button>
         <button onClick={this.saveToJson}>Save to json</button>
         <button onClick={this.loadFromJson}>Load from json</button>
@@ -190,7 +198,7 @@ class App extends Component {
               x={20}
               y={20}
               width={400}
-              height={600}
+              height={500}
               fill="white"
               stroke="black"
               strokeWidth={4}
