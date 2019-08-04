@@ -1,14 +1,10 @@
-import React, { Component } from 'react';
-import Konva from 'konva';
-import { Stage, Layer, Star, Text } from 'react-konva';
+import React, { Component } from "react";
+import Konva from "konva";
+import { Stage, Layer, Star, Rect, Text, Label, Tag } from "react-konva";
 
 class App extends Component {
   handleDragStart = e => {
     e.target.setAttrs({
-      shadowOffset: {
-        x: 15,
-        y: 15
-      },
       scaleX: 1.1,
       scaleY: 1.1
     });
@@ -18,35 +14,37 @@ class App extends Component {
       duration: 0.5,
       easing: Konva.Easings.ElasticEaseOut,
       scaleX: 1,
-      scaleY: 1,
-      shadowOffsetX: 5,
-      shadowOffsetY: 5
+      scaleY: 1
     });
   };
   render() {
     return (
       <Stage width={window.innerWidth} height={window.innerHeight}>
         <Layer>
-          <Text text="Try to drag a star" />
-          {[...Array(10)].map((_, i) => (
-            <Star
-              key={i}
-              x={Math.random() * window.innerWidth}
-              y={Math.random() * window.innerHeight}
-              numPoints={5}
-              innerRadius={20}
-              outerRadius={40}
-              fill="#89b717"
-              opacity={0.8}
-              draggable
-              rotation={Math.random() * 180}
-              shadowColor="black"
-              shadowBlur={10}
-              shadowOpacity={0.6}
-              onDragStart={this.handleDragStart}
-              onDragEnd={this.handleDragEnd}
+          <Rect
+            x={20}
+            y={20}
+            width={400}
+            height={600}
+            fill="white"
+            stroke="black"
+            strokeWidth={4}
+          />
+          <Label draggable x={150} y={50}>
+            <Tag
+              fill="white"
+              stroke="black"
+              strokeWidth={4} 
+              lineJoin="round"
             />
-          ))}
+            <Text
+              text="Tooltip pointing down"
+              fontFamily="Calibri"
+              fontSize={18}
+              padding={5}
+              fill="black"
+            />
+          </Label>
         </Layer>
       </Stage>
     );
