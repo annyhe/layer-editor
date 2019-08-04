@@ -5,11 +5,12 @@ import EditableText from "./EditableText";
 import MovableLine from "./MovableLine";
 import useImage from "use-image";
 
+const FAVICON_URL = process.env.PUBLIC_URL + '/favicon.ico';
 const url = "https://konvajs.github.io/assets/yoda.jpg";
 function getRandomInt() {
   return parseInt(Math.random() * 1000, 10);
 }
-function SimpleApp(props) {
+function ImageRender(props) {
   const [image] = useImage(props.url || url);
 
   // "image" will DOM image element or undefined
@@ -144,10 +145,28 @@ class App extends Component {
     });
   };
   saveImage = () => {
-    const base64String = this.stageNode.toDataURL();
-    this.downloadLink.download = "stage.png";
-    this.downloadLink.href = base64String;
-    this.downloadLink.click();
+    // before calling toDataURL, need to make sure there are no externally loaded URLs
+    // if there are http... urls, need to swap them out with local versions
+    // ? need to send image ids back to the server too? but the arrays are ordered...
+    const remoteUrls = this.state.images.map((image) => {
+      return image.url.startsWith('http');
+    }).map((image) => image.url);
+
+    // POST to save the images, get local links back
+    const localLinks = Array.apply(null, Array(remoteUrls.length))
+      .map(function (x) { return FAVICON_URL; })
+
+    // swap out the remote urls with local urls
+    const copyOfImages = [...this.state.images];
+    copyOfImages.forEach((image) => {
+      if (image.url.startsWith('http')) image.url = localLinks.shift();
+    });
+    this.setState({ images: copyOfImages }, () => {
+      const base64String = this.stageNode.toDataURL();
+      this.downloadLink.download = "stage.png";
+      this.downloadLink.href = base64String;
+      this.downloadLink.click();  
+    });
   };
   handleLineDragEnd = e => {
     this.setState({
@@ -157,7 +176,7 @@ class App extends Component {
   };
   addImage = () => {
     const copyOfImages = [...this.state.images];
-    copyOfImages.push({id: getRandomInt(), url: process.env.PUBLIC_URL + '/favicon.ico'});
+    copyOfImages.push({id: getRandomInt(), url: FAVICON_URL});
     this.setState({
       images: copyOfImages
     })
@@ -219,7 +238,7 @@ class App extends Component {
               );
             })}
             {this.state.images.map(image => {
-              return <SimpleApp key={image.id} id={image.id} url={image.url} />;
+              return <ImageRender key={image.id} id={image.id} url={image.url} />;
             })}
           </Layer>
         </Stage>
