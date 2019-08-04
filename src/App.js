@@ -1,12 +1,21 @@
 import React, { Component } from "react";
 import Konva from "konva";
-import { Stage, Layer, Rect, Text, Label, Tag } from "react-konva";
+import { Stage, Layer, Rect, Text, Label, Tag, Image } from "react-konva";
+import useImage from 'use-image';
+
+const url = 'https://konvajs.github.io/assets/yoda.jpg';
+
+function SimpleApp() {  
+  const [image] = useImage(url);
+
+  // "image" will DOM image element or undefined
+  const _id = parseInt(Math.random() * 1000, 10);
+  return (
+    <Image id={_id} draggable image={image} />
+  );
+}
 
 class App extends Component {
-  state = {
-      selectedText: 'first',
-      changeTextTo: "Tooltip pointing down dasodnasdiandoandnasdonasdaidasiodasodhaodhaodhaoudhauo"
-    };
   handleDragStart = e => {
     e.target.setAttrs({
       scaleX: 1.1,
@@ -21,20 +30,35 @@ class App extends Component {
       scaleY: 1
     });
   };
-  changeText = e => {
-    this.setState({
-      changeTextTo: e.target.value
-    });
+
+  loadFromJson = () => {
+    const json = localStorage.getItem('konva');
+    console.log(json);
+    // Konva.Node.create(json, 'container');
   }
 
-  // const text = this.layerNode.find('Text')[0];
+  saveToJson = () => {
+    // save stage as a json string
+    const jsonString = this.stageNode.toJSON();
+    const imageNodes = this.layerNode.find('Image');
+    const jsonObject = JSON.parse(jsonString);
+    jsonObject.images = {};
+    imageNodes.forEach(element => {
+      jsonObject.images[element.id()] = element.image().src;
+    });
+    localStorage.setItem('konva', JSON.stringify(jsonObject));
+  }
   
   render() {
     return (
       <div>
-        <p>Selected text node ID: {this.state.selectedText}</p>
-        <p>Change text to: <input defaultValue={this.state.changeTextTo} onChange={this.changeText} /></p>
-        <Stage width={window.innerWidth} height={window.innerHeight}>
+        <button onClick={this.saveToJson}>Save to json</button>
+        <button onClick={this.loadFromJson}>Load from json</button>
+        <Stage 
+            ref={node => {
+              this.stageNode = node;
+            }}        
+          width={window.innerWidth} height={window.innerHeight}>
           <Layer
             ref={node => {
               this.layerNode = node;
@@ -49,6 +73,7 @@ class App extends Component {
               stroke="black"
               strokeWidth={4}
             />
+            <SimpleApp /> 
             <Label draggable x={24} y={20}>
               <Tag
                 fill="white"
@@ -62,27 +87,14 @@ class App extends Component {
                 x={20}
                 y={20}
                 width={392}
-                text={this.state.changeTextTo}
+                text={'hello world'}
                 wrap="word"
                 fontFamily="Calibri"
                 fontSize={18}
                 padding={5}
                 fill="black"
               />
-            </Label>
-
-            <Text
-              id='second'
-                x={120}
-                y={120}
-                width={200}
-                text={this.state.changeTextTo}
-                wrap="word"
-                fontFamily="Calibri"
-                fontSize={18}
-                padding={5}
-                fill="black"
-              />     
+            </Label> 
           </Layer>
         </Stage>
       </div>
