@@ -4,20 +4,78 @@ import { Stage, Layer, Rect, Text, Label, Tag, Image } from "react-konva";
 import useImage from 'use-image';
 
 const url = 'https://konvajs.github.io/assets/yoda.jpg';
-
+function getRandomInt() {
+  return parseInt(Math.random() * 1000, 10);
+}
 function SimpleApp(props) {  
   const [image] = useImage(props.url || url);
 
   // "image" will DOM image element or undefined
-  const _id = parseInt(Math.random() * 1000, 10);
+  const _id = getRandomInt;
   return (
     <Image id={props.id || _id} draggable image={image} />
   );
 }
 
+// textarea need be outside of Stage
+class EditableText extends React.Component {
+  state = {
+    textEditVisible: false,
+    textX: 0,
+    textY: 0,
+    textValue: 'Hello'
+  };
+  handleTextDblClick = e => {
+    const absPos = e.target.getAbsolutePosition();
+    this.setState({
+      textEditVisible: true,
+      textX: absPos.x,
+      textY: absPos.y
+    });
+  };
+  handleTextEdit = e => {
+    this.setState({
+      textValue: e.target.value
+    });
+  };
+  handleTextareaKeyDown = e => {
+    if (e.keyCode === 13) {
+      this.setState({
+        textEditVisible: false
+      });
+    }
+  };
+  render() {
+    return (
+      <div>
+            <Text
+              text={this.state.textValue}
+              x={100}
+              y={100}
+              fontSize={20}
+              onDblClick={this.handleTextDblClick}
+            />
+        <textarea
+          value={this.state.textValue}
+          style={{
+            display: this.state.textEditVisible ? 'block' : 'none',
+            position: 'absolute',
+            top: this.state.textY + 'px',
+            left: this.state.textX + 'px'
+          }}
+          onChange={this.handleTextEdit}
+          onKeyDown={this.handleTextareaKeyDown}
+        />
+      </div>
+    );
+  }
+}
+
+
 class App extends Component {
   state = {
-    images: []
+    images: [],
+    textNodes: []
   }
   handleDragStart = e => {
     e.target.setAttrs({
@@ -26,6 +84,7 @@ class App extends Component {
     });
   };
   handleDragEnd = e => {
+    console.log(e.target.getAbsolutePosition(this.layerNode))
     e.target.to({
       duration: 0.5,
       easing: Konva.Easings.ElasticEaseOut,
@@ -39,14 +98,7 @@ class App extends Component {
     console.log(obj.images);
     this.setState({
       images: obj.images
-    })
-    // obj.children[0].children.forEach((child) => {
-    //   console.log(child.className); 
-    //   if (child.className === 'Image') { 
-    //     console.log(child.attrs.id); 
-    //     console.log(obj.images[child.attrs.id]);
-    //   } 
-    // });
+    }); 
   }
 
   saveToJson = () => {
@@ -61,10 +113,15 @@ class App extends Component {
     });
     localStorage.setItem('konva', JSON.stringify(jsonObject));
   }
-  
+  addText = () => {
+    this.setState({
+      textNodes: [...this.state.textNodes, {id: getRandomInt()}] 
+    })
+  }
   render() {
     return (
       <div>
+        <button onClick={this.addText}>Add text</button>
         <button onClick={this.saveToJson}>Save to json</button>
         <button onClick={this.loadFromJson}>Load from json</button>
         <Stage 
@@ -86,6 +143,9 @@ class App extends Component {
               stroke="black"
               strokeWidth={4}
             />
+          {this.state.textNodes.map((text) => {
+            return <Text key={text.id} draggable text='hello' />
+          })}
           {this.state.images.map((image) => {
             return <SimpleApp key={image.id} id={image.id} url={image.url} />
           })}
