@@ -40,28 +40,50 @@ class App extends Component {
     images: [],
     textNodes: [],
     textEditVisible: false,
-    // these should be 1:1 with the text node
+    // for temporary edits
     textX: 0,
     textY: 0,
-    textValue: "Hello"    
+    textValue: 'hello world',
+    currentTextNodeID: 0,
   };
   updateTextState = e => {
     const absPos = e.target.getAbsolutePosition();
+    console.log(this.state.textNodes)
+    const nodeID = e.target.id();
+
+    const copyOfNodes = [...this.state.textNodes];
+    const node = copyOfNodes.filter((node) => node.id === nodeID);
+    node.textX = absPos.x;
+    node.textY = absPos.y;
+    
     this.setState({
+      textValue: e.target.text(),
       textEditVisible: true,
+      textNodes: copyOfNodes,
       textX: absPos.x,
-      textY: absPos.y
+      textY: absPos.y,
+      currentTextNodeID: nodeID
     });
   }
-  handleTextEdit = e => {
+  handleTextAreaEdit = e => {
     this.setState({
       textValue: e.target.value
     });
   };
   handleTextareaKeyDown = e => {
+    const copyOfNodes = [...this.state.textNodes];
+    const nodes = copyOfNodes.filter((node) => node.id === this.state.currentTextNodeID);
+    if (!nodes.length) {
+      console.log('Text node ID not found in state');
+      return;
+    }
+
+    nodes[0].textValue = e.target.value;
+
     if (e.keyCode === 13) {
       this.setState({
-        textEditVisible: false
+        textEditVisible: false,
+        textNodes: copyOfNodes
       });
     }
   };  
@@ -115,7 +137,12 @@ class App extends Component {
   addText = () => {
     console.log(this.state.textNodes);
     this.setState({
-      textNodes: [...this.state.textNodes, { id: getRandomInt() }]
+      textNodes: [...this.state.textNodes, { 
+        id: getRandomInt(), 
+        textX: 0,
+        textY: 0,
+        textValue: "Hello"
+      }]
     });
   };
   render() {
@@ -150,7 +177,7 @@ class App extends Component {
                 key={text.id || getRandomInt()} 
                 onDragStart={this.handleDragStart} 
                 onDragEnd={this.handleDragEnd} 
-                {...this.state} {...text} 
+                {...text} 
                 updateTextState={this.updateTextState} />
               // return <Text key={text.id || getRandomInt()} {...text} />;
             })}
@@ -167,7 +194,7 @@ class App extends Component {
             top: this.state.textY + "px",
             left: this.state.textX + "px"
           }}
-          onChange={this.handleTextEdit}
+          onChange={this.handleTextAreaEdit}
           onKeyDown={this.handleTextareaKeyDown}
         />        
       </div>
