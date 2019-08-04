@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app). Then an Express server was added in the `server` directory. The server is proxied via the `proxy` key in `package.json`.
 
+## bugs
+- bottom of stage rectangle cut off
+- on new text: default position should be 20,20 instead of 0, 0
+- cannot save image if the url is from external source: tainted canvas
+- on reload stage, how to know the id of the text that's being edited? also need to add the text properties to this.state
+
 ## Using this project
 
 Clone the project, change into the directory and install the dependencies.

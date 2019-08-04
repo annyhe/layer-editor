@@ -140,9 +140,24 @@ class App extends Component {
       }]
     });
   };
+  saveImage = () => {
+    const base64String = this.stageNode.toDataURL();
+    console.log(base64String);
+    this.downloadLink.download = 'stage.png';
+    this.downloadLink.href = base64String;
+    this.downloadLink.click();
+  }
   render() {
     return (
       <div>
+        <a 
+        style={{
+          display:  "none"
+        }}
+        ref={node => {
+            this.downloadLink = node;
+          }} href='#'> Download link</a>
+        <button onClick={this.saveImage}>Save image</button>
         <button onClick={this.addText}>Add text</button>
         <button onClick={this.saveToJson}>Save to json</button>
         <button onClick={this.loadFromJson}>Load from json</button>
