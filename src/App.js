@@ -4,7 +4,7 @@ import { Stage, Layer, Rect, Text, Label, Tag } from "react-konva";
 
 class App extends Component {
   state = {
-      selectedText: '',
+      selectedText: 'first',
       changeTextTo: "Tooltip pointing down dasodnasdiandoandnasdonasdaidasiodasodhaodhaodhaoudhauo"
     };
   handleDragStart = e => {
@@ -56,7 +56,7 @@ class App extends Component {
                 strokeWidth={4}
                 lineJoin="round"
               />
-              {/* text is maximum 400 - 8*/}
+              {/* text is maximum 400 - 8*/}          
               <Text
               id='first'
                 x={20}
@@ -70,6 +70,19 @@ class App extends Component {
                 fill="black"
               />
             </Label>
+
+            <Text
+              id='second'
+                x={120}
+                y={120}
+                width={200}
+                text={this.state.changeTextTo}
+                wrap="word"
+                fontFamily="Calibri"
+                fontSize={18}
+                padding={5}
+                fill="black"
+              />     
           </Layer>
         </Stage>
       </div>
