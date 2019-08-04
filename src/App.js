@@ -37,13 +37,8 @@ class App extends Component {
   loadFromJson = () => {
     const obj = JSON.parse(localStorage.getItem('konva'));
     console.log(obj.images);
-    const entries = Object.entries(obj.images);
-    console.log(entries);
-    for (const [id, url] of entries) {
-      console.log(`Image with ${id} is url ${url}`)
-    }    
     this.setState({
-      images: [ {id: entries[0][0], url: entries[0][1] }]
+      images: obj.images
     })
     // obj.children[0].children.forEach((child) => {
     //   console.log(child.className); 
@@ -59,9 +54,10 @@ class App extends Component {
     const jsonString = this.stageNode.toJSON();
     const imageNodes = this.layerNode.find('Image');
     const jsonObject = JSON.parse(jsonString);
-    jsonObject.images = {};
+    jsonObject.images = [];
     imageNodes.forEach(element => {
-      jsonObject.images[element.id()] = element.image().src;
+      console.log(element.image().src);
+      jsonObject.images.push({id: element.id(), url: element.image().src});
     });
     localStorage.setItem('konva', JSON.stringify(jsonObject));
   }
@@ -91,7 +87,7 @@ class App extends Component {
               strokeWidth={4}
             />
           {this.state.images.map((image) => {
-            return <SimpleApp id={image.id} url={image.url} />
+            return <SimpleApp key={image.id} id={image.id} url={image.url} />
           })}
           </Layer>
         </Stage>
