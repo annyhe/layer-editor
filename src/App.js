@@ -11,11 +11,14 @@ function getRandomInt() {
   return parseInt(Math.random() * 1000, 10);
 }
 function ImageRender(props) {
+  // const handleImageDblClick = event => this.props.setImageUrl(event);
   const [image] = useImage(props.url || url);
 
   // "image" will DOM image element or undefined
   const _id = getRandomInt;
-  return <Image id={props.id || _id} draggable image={image} />;
+  return <Image id={props.id || _id} 
+    // onDblClick={this.handleImageDblClick}
+    draggable image={image} />;
 }
 
 class App extends Component {
@@ -40,6 +43,9 @@ class App extends Component {
       }
     ]
   };
+  setImageUrl = e => {
+    console.log('in setImageUrl')
+  }
   updateTextState = e => {
     // e.target refers to Text instead of textarea
     const absPos = e.target.getAbsolutePosition();
